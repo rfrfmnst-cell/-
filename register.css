@@ -1,0 +1,38 @@
+.customer-register-page{
+  min-height:100vh;
+  margin:0;
+  background:
+    radial-gradient(circle at 16% 12%,rgba(105,180,170,.20),transparent 30%),
+    radial-gradient(circle at 88% 86%,rgba(196,226,140,.18),transparent 28%),
+    #f3f7f6;
+  color:#102f2d;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Tahoma,Arial,sans-serif;
+}
+.register-header{max-width:1180px;margin:auto;background:transparent;border:0;}
+.register-shell{min-height:calc(100vh - 200px);display:grid;place-items:center;padding:70px 22px;}
+.register-card{width:min(100%,560px);background:rgba(255,255,255,.95);border:1px solid #d9e7e4;border-radius:32px;padding:38px;box-shadow:0 30px 80px rgba(13,50,48,.11);backdrop-filter:blur(16px);}
+.register-intro{text-align:center;margin-bottom:30px;}
+.register-intro h1{font-size:clamp(2.35rem,7vw,3.7rem);letter-spacing:-.045em;line-height:1.08;margin:8px 0 14px;color:#123f3b;}
+.register-intro>p:not(.eyebrow){color:#6d837f;max-width:440px;margin-inline:auto;}
+.register-form{display:grid;gap:10px;}
+.register-form label{font-weight:850;font-size:.9rem;margin-top:7px;color:#244d49;}
+.register-form>input,.phone-field{width:100%;border:1px solid #cddedb;background:#fbfdfc;border-radius:16px;min-height:58px;transition:.2s;}
+.register-form>input{padding:0 17px;font:inherit;outline:none;}
+.register-form>input:focus,.phone-field:focus-within{border-color:#69b4aa;box-shadow:0 0 0 4px rgba(105,180,170,.12);background:#fff;}
+.phone-field{display:flex;align-items:center;overflow:hidden;}
+.phone-field span{height:58px;display:grid;place-items:center;padding:0 15px;background:#eaf3f1;color:#315f5a;font-weight:850;border-right:1px solid #d2e1de;}
+.phone-field input{flex:1;min-width:0;height:58px;border:0;background:transparent;padding:0 15px;font:inherit;outline:none;text-align:left;}
+.register-form small{color:#7b908c;font-size:.76rem;}
+.register-submit{width:100%;margin-top:16px;min-height:55px;font-weight:900;font-size:1rem;}
+.register-submit:disabled{opacity:.62;cursor:wait;}
+.register-status{min-height:30px;margin:5px 0 0;text-align:center;font-size:.84rem;font-weight:800;}
+.register-status.success{color:#2d7068;background:#edf8f5;border:1px solid #cce7e1;border-radius:12px;padding:10px;}
+.register-status.error{color:#9b3e35;background:#fff3f1;border:1px solid #f0cfca;border-radius:12px;padding:10px;}
+.register-note{margin-top:22px;padding:14px 16px;border-radius:16px;background:#f0f6f4;display:flex;align-items:center;gap:12px;}
+.register-note>span{width:36px;height:36px;display:grid;place-items:center;background:#dcefeb;color:#37766f;border-radius:11px;font-weight:900;}
+.register-note p{display:flex;flex-direction:column;margin:0;line-height:1.5;}
+.register-note small{color:#78908c;}
+.register-footer{max-width:1180px;margin:auto;}
+@media(max-width:600px){.register-card{padding:26px 18px;border-radius:24px}.register-shell{padding:38px 14px}.register-header{padding-inline:16px}.register-header .brand-logo{width:120px;height:68px}.register-footer{padding-inline:20px}}
+
+.register-status small{font-size:.78rem;opacity:.85}

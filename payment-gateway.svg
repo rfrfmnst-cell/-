@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="t d">
+<title id="t">ربط بوابات الدفع الإلكتروني</title><desc id="d">تصميم تجريدي لبطاقة دفع ودرع حماية واتصال رقمي</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0d3230"/><stop offset="1" stop-color="#2c7b72"/></linearGradient><linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".98"/><stop offset="1" stop-color="#dff1ed"/></linearGradient></defs>
+<rect width="1200" height="800" rx="54" fill="url(#bg)"/><circle cx="1000" cy="80" r="260" fill="#69b4aa" opacity=".14"/><circle cx="180" cy="720" r="300" fill="#c4e28c" opacity=".08"/>
+<g transform="translate(205 180) rotate(-6 350 220)"><rect width="700" height="430" rx="42" fill="url(#card)"/><rect y="82" width="700" height="86" fill="#143f3b"/><rect x="65" y="235" width="250" height="30" rx="15" fill="#8ebdb7"/><rect x="65" y="292" width="160" height="22" rx="11" fill="#bed8d4"/><circle cx="600" cy="320" r="44" fill="#69b4aa"/><circle cx="548" cy="320" r="44" fill="#c4e28c" opacity=".85"/></g>
+<g transform="translate(765 330)"><path d="M120 0 230 42v98c0 90-47 155-110 190C57 295 10 230 10 140V42Z" fill="#c4e28c" stroke="#fff" stroke-width="12"/><path d="m70 151 33 33 68-79" fill="none" stroke="#123f3b" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g fill="#fff" opacity=".75"><circle cx="140" cy="120" r="9"/><circle cx="170" cy="120" r="9"/><circle cx="200" cy="120" r="9"/><path d="M140 120h210" stroke="#fff" stroke-width="3" stroke-dasharray="10 12"/></g>
+</svg>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="تسجيل عميل جديد في انطلاقة للتجارة الإلكترونية." />
+  <title>تسجيل العميل | انطلاقة</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="register.css" />
+</head>
+<body class="customer-register-page">
+  <a class="skip-link" href="#main-content">انتقل إلى المحتوى الرئيسي</a>
+
+  <header class="site-header register-header">
+    <a class="brand" href="index.html" aria-label="العودة إلى انطلاقة">
+      <img class="brand-logo" src="logo-transparent.png" alt="شعار انطلاقة" />
+    </a>
+    <a class="back-link" href="index.html">العودة للرئيسية ←</a>
+  </header>
+
+  <main id="main-content" class="register-shell">
+    <section class="register-card" aria-labelledby="registerTitle">
+      <div class="register-intro">
+        <p class="eyebrow">حساب عميل انطلاقة</p>
+        <h1 id="registerTitle">سجّل بياناتك</h1>
+        <p>أدخل اسمك ورقم جوالك مرة واحدة، وسنربط حسابك تلقائيًا بطلبات الخدمات والمشاريع داخل انطلاقة.</p>
+      </div>
+
+      <p id="registeredCustomerNotice" class="register-status success" hidden></p>
+      <form id="customerRegisterForm" class="register-form" novalidate>
+        <label for="customerName">الاسم</label>
+        <input id="customerName" name="name" type="text" autocomplete="name" maxlength="120" placeholder="اكتب اسمك" required />
+
+        <label for="customerPhone">رقم الجوال</label>
+        <div class="phone-field" dir="ltr">
+          <span>+966</span>
+          <input id="customerPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="5XXXXXXXX" aria-describedby="phoneHint" required />
+        </div>
+        <small id="phoneHint">مثال: 512345678</small>
+
+        <button class="button button-primary register-submit" type="submit">تسجيل ومتابعة الطلب</button>
+        <p class="register-status" id="registerStatus" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="register-note">
+        <span aria-hidden="true">✓</span>
+        <p><strong>تسجيل سريع</strong><small>الاسم ورقم الجوال فقط في هذه المرحلة.</small></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer home-footer register-footer">
+    <div class="footer-brand"><img src="logo-transparent.png" alt="انطلاقة" /><p>انطلاقة – للتجارة الإلكترونية<br><a href="mailto:antlakah2030@gmail.com">antlakah2030@gmail.com</a></p></div>
+    <small>© 2026 انطلاقة</small>
+  </footer>
+
+  <script src="customer-session.js"></script>
+  <script src="register.js"></script>
+</body>
+</html>
