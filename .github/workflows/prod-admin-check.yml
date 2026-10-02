@@ -1,8 +1,8 @@
 name: Production admin check
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches: [prod-admin-check]
 
 jobs:
   check:
@@ -15,4 +15,4 @@ jobs:
           curl -i -sS --max-time 30 https://antlaqh.com/api/health || true
           echo
           echo "ADMIN:"
-          curl -i -sS --max-time 30 https://antlaqh.com/admin.html | head -n 30 || true
+          curl -i -sS --max-time 30 https://antlaqh.com/admin.html | head -n 40 || true
