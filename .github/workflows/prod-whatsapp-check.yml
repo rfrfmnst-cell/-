@@ -1,0 +1,44 @@
+name: Production WhatsApp check
+
+on:
+  push:
+    branches:
+      - whatsapp-production-check
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Checking https://antlaqh.com/api/health"
+          BODY="$(curl -fsSL --connect-timeout 15 --max-time 30 https://antlaqh.com/api/health)"
+          echo "$BODY"
+          python - <<'PY'
+          import json, os
+          body = os.environ["BODY"]
+          data = json.loads(body)
+          print("ok:", data.get("ok"))
+          print("whatsappConfigured:", data.get("whatsappConfigured"))
+          print("whatsappTemplateConfigured:", data.get("whatsappTemplateConfigured"))
+          if data.get("ok") is not True:
+              raise SystemExit("Production health endpoint is not OK")
+          if data.get("whatsappConfigured") is not True:
+              raise SystemExit("WhatsApp Cloud API environment is not configured on production")
+          if data.get("whatsappTemplateConfigured") is not True:
+              raise SystemExit("WhatsApp order template is not configured on production")
+          PY
+        env:
+          BODY: ${{ steps.health.outputs.body }}
+      - id: health
+        name: Capture production health
+        shell: bash
+        run: |
+          BODY="$(curl -fsSL --connect-timeout 15 --max-time 30 https://antlaqh.com/api/health)"
+          {
+            echo 'body<<EOF'
+            echo "$BODY"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
