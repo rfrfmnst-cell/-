@@ -2,6 +2,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const {
+  extractWebhookEvents,
+  isWhatsAppConfigured,
+  sendWhatsAppText,
+  verifyWebhookChallenge,
+  verifyWebhookSignature
+} = require('./whatsapp');
 
 const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
@@ -68,6 +75,33 @@ function baseHeaders(contentType) {
 function send(res, status, body, type = 'application/json; charset=utf-8') {
   res.writeHead(status, baseHeaders(type));
   res.end(type.startsWith('application/json') ? JSON.stringify(body) : body);
+}
+
+function readRawBody(req, maxBytes = MAX_BODY_BYTES) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let size = 0;
+    let settled = false;
+
+    req.on('data', (chunk) => {
+      if (settled) return;
+      size += chunk.length;
+      if (size > maxBytes) {
+        settled = true;
+        reject(new Error('Body too large'));
+        return;
+      }
+      body += chunk;
+    });
+
+    req.on('end', () => {
+      if (!settled) resolve(body);
+    });
+
+    req.on('error', (error) => {
+      if (!settled) reject(error);
+    });
+  });
 }
 
 function readBody(req) {
@@ -187,6 +221,35 @@ async function askOpenAI(message) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
+  if (req.method === 'GET' && url.pathname === '/api/whatsapp/webhook') {
+    const challenge = verifyWebhookChallenge(url);
+    if (!challenge) return send(res, 403, { ok: false, message: 'Webhook verification failed.' });
+    res.writeHead(200, baseHeaders('text/plain; charset=utf-8'));
+    return res.end(challenge);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/whatsapp/webhook') {
+    try {
+      const rawBody = await readRawBody(req, 256 * 1024);
+      if (!verifyWebhookSignature(rawBody, req.headers['x-hub-signature-256'])) {
+        return send(res, 403, { ok: false, message: 'Invalid webhook signature.' });
+      }
+
+      const payload = JSON.parse(rawBody || '{}');
+      const events = extractWebhookEvents(payload);
+      if (events.length) {
+        const records = readRecords('whatsapp-events');
+        records.push(...events.slice(0, 100));
+        writeRecords('whatsapp-events', records.slice(-5000));
+      }
+
+      return send(res, 200, { ok: true });
+    } catch (error) {
+      console.error('WhatsApp webhook error:', error.message);
+      return send(res, error.message === 'Body too large' ? 413 : 400, { ok: false, message: 'Invalid WhatsApp webhook payload.' });
+    }
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/assistant') {
     if (!withinRateLimit(req, 'assistant', 20, 10 * 60 * 1000)) return send(res, 429, { ok: false, message: 'تم تجاوز عدد المحاولات مؤقتًا. حاول لاحقًا.' });
     try {
@@ -273,6 +336,18 @@ const server = http.createServer(async (req, res) => {
       const records = readRecords(collection);
       records.push(record);
       writeRecords(collection, records);
+
+      if (collection === 'contracts') {
+        try {
+          await sendWhatsAppText(
+            record.customerPhone,
+            `مرحبًا ${record.clientName}، تم استلام طلبك لدى انطلاقة بنجاح. رقم المتابعة: ${record.trackingCode}. سنرسل لك تحديثات حالة الطلب عبر هذا الرقم.`
+          );
+        } catch (error) {
+          console.error('WhatsApp contract notification error:', error.message);
+        }
+      }
+
       return send(res, 201, { ok: true, id: record.id, trackingCode: record.trackingCode });
     } catch (error) {
       const status = error.message === 'Body too large' ? 413 : 400;
@@ -313,6 +388,16 @@ const server = http.createServer(async (req, res) => {
       const records = readRecords('site-orders');
       records.push(record);
       writeRecords('site-orders', records);
+
+      try {
+        await sendWhatsAppText(
+          record.customerPhone,
+          `مرحبًا ${record.name}، استلمنا طلب مشروعك في انطلاقة. رقم الطلب: ${record.orderCode}. الحالة الحالية: ${record.status}.`
+        );
+      } catch (error) {
+        console.error('WhatsApp site-order notification error:', error.message);
+      }
+
       return send(res, 201, { ok: true, orderCode: record.orderCode, status: record.status });
     } catch (error) {
       return send(res, error.message === 'Body too large' ? 413 : 400, { ok: false, message: 'تعذر حفظ وصف المشروع.' });
@@ -345,7 +430,19 @@ const server = http.createServer(async (req, res) => {
         productId, productTitle: product.title, amount: product.price, currency: 'SAR',
         name, email, phone, status: 'pending_payment', createdAt: new Date().toISOString()
       };
-      const records = readRecords('digital-orders'); records.push(record); writeRecords('digital-orders', records);
+      const records = readRecords('digital-orders');
+      records.push(record);
+      writeRecords('digital-orders', records);
+
+      try {
+        await sendWhatsAppText(
+          record.phone,
+          `مرحبًا ${record.name}، تم إنشاء طلبك في انطلاقة. رقم الطلب: ${record.orderCode}. المبلغ: ${record.amount} ${record.currency}. سنرسل لك تحديثات الطلب بعد تأكيد الدفع.`
+        );
+      } catch (error) {
+        console.error('WhatsApp digital-order notification error:', error.message);
+      }
+
       return send(res, 201, { ok: true, orderCode: record.orderCode, status: record.status, amount: record.amount, currency: record.currency });
     } catch (error) {
       return send(res, error.message === 'Body too large' ? 413 : 400, { ok: false, message: 'تعذر إنشاء طلب المنتج.' });
@@ -397,6 +494,7 @@ const server = http.createServer(async (req, res) => {
       ok: true,
       service: 'انطلاقة – للتجارة الإلكترونية',
       aiConfigured: Boolean(OPENAI_API_KEY),
+      whatsappConfigured: isWhatsAppConfigured(),
       time: new Date().toISOString()
     });
   }
