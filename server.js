@@ -6,6 +6,8 @@ const {
   extractWebhookEvents,
   isWhatsAppConfigured,
   isOrderTemplateConfigured,
+  isAdminNotificationConfigured,
+  sendAdminReviewNotification,
   sendOrderNotification,
   verifyWebhookChallenge,
   verifyWebhookSignature
@@ -349,7 +351,7 @@ const server = http.createServer(async (req, res) => {
         ...safePayload,
         id: crypto.randomUUID(),
         trackingCode: generateTrackingCode(),
-        status: 'جديد',
+        status: collection === 'contracts' ? 'قيد المراجعة' : 'جديد',
         createdAt: new Date().toISOString()
       };
 
@@ -358,6 +360,21 @@ const server = http.createServer(async (req, res) => {
       writeRecords(collection, records);
 
       if (collection === 'contracts') {
+        const notifications = readRecords('admin-notifications');
+        notifications.push({
+          id: crypto.randomUUID(),
+          type: 'contract_review',
+          title: 'طلب ينتظر الموافقة',
+          message: `${record.clientName} وافق على العقد وينتظر مراجعة الطلب.`,
+          customerName: record.clientName,
+          orderCode: record.trackingCode,
+          service: record.service,
+          recordId: record.id,
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+        writeRecords('admin-notifications', notifications.slice(-2000));
+
         try {
           await sendOrderNotification(
             record.customerPhone,
@@ -368,9 +385,19 @@ const server = http.createServer(async (req, res) => {
         } catch (error) {
           console.error('WhatsApp contract notification error:', error.message);
         }
+
+        try {
+          await sendAdminReviewNotification(
+            record.clientName,
+            record.trackingCode,
+            record.service
+          );
+        } catch (error) {
+          console.error('WhatsApp admin review notification error:', error.message);
+        }
       }
 
-      return send(res, 201, { ok: true, id: record.id, trackingCode: record.trackingCode });
+      return send(res, 201, { ok: true, id: record.id, trackingCode: record.trackingCode, status: record.status });
     } catch (error) {
       const status = error.message === 'Body too large' ? 413 : 400;
       return send(res, status, { ok: false, message: 'تعذر حفظ البيانات.' });
@@ -475,6 +502,77 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/digital-orders') {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    return send(res, 200, readRecords('digital-orders'));
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/admin-notifications') {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    return send(res, 200, readRecords('admin-notifications').slice().reverse());
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/whatsapp-events') {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    return send(res, 200, readRecords('whatsapp-events').slice(-200).reverse());
+  }
+
+  if (req.method === 'PATCH' && url.pathname.startsWith('/api/admin-notifications/')) {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    try {
+      const id = url.pathname.split('/').pop();
+      const notifications = readRecords('admin-notifications');
+      const item = notifications.find((entry) => entry.id === id);
+      if (!item) return send(res, 404, { ok: false, message: 'التنبيه غير موجود.' });
+      item.read = true;
+      item.readAt = new Date().toISOString();
+      writeRecords('admin-notifications', notifications);
+      return send(res, 200, { ok: true, item });
+    } catch {
+      return send(res, 400, { ok: false, message: 'تعذر تحديث التنبيه.' });
+    }
+  }
+
+  if (req.method === 'PATCH' && url.pathname.startsWith('/api/site-orders/')) {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    try {
+      const id = url.pathname.split('/').pop();
+      const payload = await readBody(req);
+      const allowedStatuses = new Set(['جديد', 'قيد المراجعة', 'قيد التنفيذ', 'مكتمل', 'ملغى']);
+      const status = cleanText(payload.status, 50);
+      if (!allowedStatuses.has(status)) return send(res, 400, { ok: false, message: 'حالة الطلب غير صالحة.' });
+      const records = readRecords('site-orders');
+      const record = records.find((item) => item.id === id);
+      if (!record) return send(res, 404, { ok: false, message: 'الطلب غير موجود.' });
+      record.status = status;
+      record.updatedAt = new Date().toISOString();
+      writeRecords('site-orders', records);
+      return send(res, 200, { ok: true, record });
+    } catch {
+      return send(res, 400, { ok: false, message: 'تعذر تحديث الطلب.' });
+    }
+  }
+
+  if (req.method === 'PATCH' && url.pathname.startsWith('/api/digital-orders/')) {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    try {
+      const id = url.pathname.split('/').pop();
+      const payload = await readBody(req);
+      const allowedStatuses = new Set(['pending_payment', 'paid', 'قيد التنفيذ', 'مكتمل', 'ملغى']);
+      const status = cleanText(payload.status, 50);
+      if (!allowedStatuses.has(status)) return send(res, 400, { ok: false, message: 'حالة الطلب غير صالحة.' });
+      const records = readRecords('digital-orders');
+      const record = records.find((item) => item.id === id);
+      if (!record) return send(res, 404, { ok: false, message: 'الطلب غير موجود.' });
+      record.status = status;
+      record.updatedAt = new Date().toISOString();
+      writeRecords('digital-orders', records);
+      return send(res, 200, { ok: true, record });
+    } catch {
+      return send(res, 400, { ok: false, message: 'تعذر تحديث الطلب.' });
+    }
+  }
+
   if (req.method === 'GET' && url.pathname.startsWith('/api/track/')) {
     const code = cleanText(decodeURIComponent(url.pathname.split('/').pop()), 40).toUpperCase();
     const record = readRecords('contracts').find((item) => item.trackingCode === code);
@@ -522,6 +620,7 @@ const server = http.createServer(async (req, res) => {
       aiConfigured: Boolean(OPENAI_API_KEY),
       whatsappConfigured: isWhatsAppConfigured(),
       whatsappTemplateConfigured: isOrderTemplateConfigured(),
+      whatsappAdminNotificationConfigured: isAdminNotificationConfigured(),
       time: new Date().toISOString()
     });
   }
