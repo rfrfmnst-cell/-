@@ -572,6 +572,11 @@ const server = http.createServer(async (req, res) => {
       record.status = status;
       record.updatedAt = new Date().toISOString();
       writeRecords('digital-orders', records);
+      try {
+        await sendOrderNotification(record.phone, record.name, record.orderCode, record.status);
+      } catch (error) {
+        console.error('WhatsApp digital-order status notification error:', error.message);
+      }
       return send(res, 200, { ok: true, record });
     } catch {
       return send(res, 400, { ok: false, message: 'تعذر تحديث الطلب.' });
