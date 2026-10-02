@@ -616,7 +616,28 @@ const server = http.createServer(async (req, res) => {
       const record = records.find((item) => item.id === id);
       if (!record) return send(res, 404, { ok: false, message: 'العقد غير موجود.' });
       record.status = status;
+      record.updatedAt = new Date().toISOString();
       writeRecords('contracts', records);
+
+      if (status !== 'قيد المراجعة') {
+        const notifications = readRecords('admin-notifications');
+        let changed = false;
+        for (const item of notifications) {
+          if (item.recordId === record.id && !item.read) {
+            item.read = true;
+            item.readAt = new Date().toISOString();
+            changed = true;
+          }
+        }
+        if (changed) writeRecords('admin-notifications', notifications);
+      }
+
+      try {
+        await sendOrderNotification(record.customerPhone, record.clientName, record.trackingCode, record.status);
+      } catch (error) {
+        console.error('WhatsApp contract status notification error:', error.message);
+      }
+
       return send(res, 200, { ok: true, record });
     } catch {
       return send(res, 400, { ok: false, message: 'تعذر تحديث العقد.' });
