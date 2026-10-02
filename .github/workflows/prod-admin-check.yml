@@ -1,0 +1,18 @@
+name: Production admin check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production
+        shell: bash
+        run: |
+          echo "HEALTH:"
+          curl -i -sS --max-time 30 https://antlaqh.com/api/health || true
+          echo
+          echo "ADMIN:"
+          curl -i -sS --max-time 30 https://antlaqh.com/admin.html | head -n 30 || true
