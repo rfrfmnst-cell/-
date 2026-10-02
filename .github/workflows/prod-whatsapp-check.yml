@@ -9,17 +9,26 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check production health endpoint
+      - id: health
+        name: Capture production health
         shell: bash
         run: |
-          set -euo pipefail
-          echo "Checking https://antlaqh.com/api/health"
           BODY="$(curl -fsSL --connect-timeout 15 --max-time 30 https://antlaqh.com/api/health)"
           echo "$BODY"
+          {
+            echo 'body<<EOF'
+            echo "$BODY"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate WhatsApp production configuration
+        shell: bash
+        env:
+          BODY: ${{ steps.health.outputs.body }}
+        run: |
           python - <<'PY'
           import json, os
-          body = os.environ["BODY"]
-          data = json.loads(body)
+          data = json.loads(os.environ["BODY"])
           print("ok:", data.get("ok"))
           print("whatsappConfigured:", data.get("whatsappConfigured"))
           print("whatsappTemplateConfigured:", data.get("whatsappTemplateConfigured"))
@@ -30,15 +39,3 @@ jobs:
           if data.get("whatsappTemplateConfigured") is not True:
               raise SystemExit("WhatsApp order template is not configured on production")
           PY
-        env:
-          BODY: ${{ steps.health.outputs.body }}
-      - id: health
-        name: Capture production health
-        shell: bash
-        run: |
-          BODY="$(curl -fsSL --connect-timeout 15 --max-time 30 https://antlaqh.com/api/health)"
-          {
-            echo 'body<<EOF'
-            echo "$BODY"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
