@@ -44,3 +44,8 @@
 بعد اعتماد القالب من Meta، ضع اسمه حرفيًا في `WHATSAPP_ORDER_TEMPLATE`.
 
 مهم: رسائل بدء المحادثة من النشاط التجاري يجب أن تستخدم قالبًا معتمدًا. الردود النصية الحرة تبقى للاستخدام داخل نافذة خدمة العميل المسموح بها بعد رسالة العميل.
+
+
+## Admin review alert
+
+Create a Meta Utility template named `intlaqah_review_alert` with three body variables: customer name, order code, and service. Set `WHATSAPP_ADMIN_PHONE` to the separate WhatsApp number that should receive the alert, and set `WHATSAPP_ADMIN_REVIEW_TEMPLATE=intlaqah_review_alert`. The alert is sent when a customer approves a contract and the request enters `قيد المراجعة`.
