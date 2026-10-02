@@ -5,6 +5,8 @@ const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || '';
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || '';
 const APP_SECRET = process.env.META_APP_SECRET || '';
 const GRAPH_API_VERSION = process.env.META_GRAPH_API_VERSION || '';
+const ORDER_TEMPLATE = process.env.WHATSAPP_ORDER_TEMPLATE || '';
+const TEMPLATE_LANGUAGE = process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'ar';
 
 function safeEqual(a, b) {
   const left = Buffer.from(String(a || ''));
@@ -42,6 +44,56 @@ function normalizeWhatsAppNumber(value) {
   if (/^05\d{8}$/.test(digits)) digits = '966' + digits.slice(1);
   if (/^5\d{8}$/.test(digits)) digits = '966' + digits;
   return /^\d{8,15}$/.test(digits) ? digits : null;
+}
+
+async function sendWhatsAppTemplate(to, templateName, parameters = [], languageCode = TEMPLATE_LANGUAGE) {
+  if (!isWhatsAppConfigured()) return { ok: false, skipped: true, reason: 'not_configured' };
+
+  const recipient = normalizeWhatsAppNumber(to);
+  const name = String(templateName || '').trim();
+  if (!recipient || !name) return { ok: false, skipped: true, reason: 'template_not_configured' };
+
+  const endpoint = `https://graph.facebook.com/${GRAPH_API_VERSION}/${PHONE_NUMBER_ID}/messages`;
+  const bodyParameters = parameters.map((value) => ({
+    type: 'text',
+    text: String(value ?? '').slice(0, 1024)
+  }));
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${ACCESS_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: recipient,
+      type: 'template',
+      template: {
+        name,
+        language: { code: languageCode },
+        components: bodyParameters.length
+          ? [{ type: 'body', parameters: bodyParameters }]
+          : []
+      }
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`WhatsApp template request failed (${response.status}): ${JSON.stringify(data).slice(0, 300)}`);
+  }
+
+  return { ok: true, data };
+}
+
+async function sendOrderNotification(to, customerName, orderCode, status) {
+  return sendWhatsAppTemplate(
+    to,
+    ORDER_TEMPLATE,
+    [customerName, orderCode, status]
+  );
 }
 
 async function sendWhatsAppText(to, message) {
@@ -113,6 +165,8 @@ function extractWebhookEvents(payload) {
 module.exports = {
   extractWebhookEvents,
   isWhatsAppConfigured,
+  sendOrderNotification,
+  sendWhatsAppTemplate,
   sendWhatsAppText,
   verifyWebhookChallenge,
   verifyWebhookSignature
