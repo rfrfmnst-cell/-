@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const {
   extractWebhookEvents,
   isWhatsAppConfigured,
+  isOrderTemplateConfigured,
   sendOrderNotification,
   verifyWebhookChallenge,
   verifyWebhookSignature
@@ -247,6 +248,25 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       console.error('WhatsApp webhook error:', error.message);
       return send(res, error.message === 'Body too large' ? 413 : 400, { ok: false, message: 'Invalid WhatsApp webhook payload.' });
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/whatsapp/test') {
+    if (!isAdmin(req)) return send(res, 401, { ok: false, message: 'رمز الإدارة غير صحيح.' });
+    try {
+      const payload = await readBody(req);
+      const phone = cleanText(payload.phone, 40);
+      const name = cleanText(payload.name, 120) || 'عميل انطلاقة';
+      const result = await sendOrderNotification(
+        phone,
+        name,
+        `TEST-${Date.now().toString().slice(-6)}`,
+        'اختبار الربط'
+      );
+      return send(res, result.ok ? 200 : 503, { ok: result.ok, result });
+    } catch (error) {
+      console.error('WhatsApp test error:', error.message);
+      return send(res, 502, { ok: false, message: 'تعذر إرسال رسالة الاختبار.' });
     }
   }
 
@@ -501,6 +521,7 @@ const server = http.createServer(async (req, res) => {
       service: 'انطلاقة – للتجارة الإلكترونية',
       aiConfigured: Boolean(OPENAI_API_KEY),
       whatsappConfigured: isWhatsAppConfigured(),
+      whatsappTemplateConfigured: isOrderTemplateConfigured(),
       time: new Date().toISOString()
     });
   }
