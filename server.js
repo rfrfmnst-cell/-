@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const {
   extractWebhookEvents,
   isWhatsAppConfigured,
-  sendWhatsAppText,
+  sendOrderNotification,
   verifyWebhookChallenge,
   verifyWebhookSignature
 } = require('./whatsapp');
@@ -339,9 +339,11 @@ const server = http.createServer(async (req, res) => {
 
       if (collection === 'contracts') {
         try {
-          await sendWhatsAppText(
+          await sendOrderNotification(
             record.customerPhone,
-            `مرحبًا ${record.clientName}، تم استلام طلبك لدى انطلاقة بنجاح. رقم المتابعة: ${record.trackingCode}. سنرسل لك تحديثات حالة الطلب عبر هذا الرقم.`
+            record.clientName,
+            record.trackingCode,
+            record.status
           );
         } catch (error) {
           console.error('WhatsApp contract notification error:', error.message);
@@ -390,9 +392,11 @@ const server = http.createServer(async (req, res) => {
       writeRecords('site-orders', records);
 
       try {
-        await sendWhatsAppText(
+        await sendOrderNotification(
           record.customerPhone,
-          `مرحبًا ${record.name}، استلمنا طلب مشروعك في انطلاقة. رقم الطلب: ${record.orderCode}. الحالة الحالية: ${record.status}.`
+          record.name,
+          record.orderCode,
+          record.status
         );
       } catch (error) {
         console.error('WhatsApp site-order notification error:', error.message);
@@ -435,9 +439,11 @@ const server = http.createServer(async (req, res) => {
       writeRecords('digital-orders', records);
 
       try {
-        await sendWhatsAppText(
+        await sendOrderNotification(
           record.phone,
-          `مرحبًا ${record.name}، تم إنشاء طلبك في انطلاقة. رقم الطلب: ${record.orderCode}. المبلغ: ${record.amount} ${record.currency}. سنرسل لك تحديثات الطلب بعد تأكيد الدفع.`
+          record.name,
+          record.orderCode,
+          record.status
         );
       } catch (error) {
         console.error('WhatsApp digital-order notification error:', error.message);
