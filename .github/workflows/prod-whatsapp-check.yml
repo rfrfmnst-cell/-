@@ -1,9 +1,9 @@
 name: Production WhatsApp check
 
 on:
-  push:
+  pull_request:
     branches:
-      - whatsapp-production-check
+      - main
 
 jobs:
   check:
