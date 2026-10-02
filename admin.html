@@ -1,1 +1,141 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="robots" content="noindex,nofollow" /><title>لوحة التحكم | انطلاقة</title><link rel="stylesheet" href="styles.css" /></head><body><header class="site-header"><a class="brand" href="index.html" aria-label="العودة إلى انطلاقة"><img class="brand-logo" src="logo-transparent.png" alt="انطلاقة" /></a><a class="back-link" href="index.html">عرض الموقع ←</a></header><main id="main-content" class="admin-page section"><div class="admin-heading"><div><p class="eyebrow">إدارة المشروع</p><h1>لوحة التحكم</h1><p>تابع بيانات العملاء والعقود وطلبات إنشاء المواقع من مكان واحد.</p></div><button class="button" id="refreshDashboard" type="button">تحديث البيانات</button></div><div class="admin-warning">نسخة محلية للتطوير فقط. قبل النشر العام يجب إضافة تسجيل دخول ومصادقة وقاعدة بيانات آمنة.</div><div class="admin-stats"><div><b id="customerCount">0</b><span>المسجلون</span></div><div><b id="leadCount">0</b><span>العملاء</span></div><div><b id="contractCount">0</b><span>العقود</span></div><div><b id="siteOrderCount">0</b><span>طلبات المواقع</span></div><div><b id="newCount">0</b><span>طلبات جديدة</span></div></div><section class="admin-section" aria-labelledby="customersTitle"><h2 id="customersTitle">العملاء المسجلون</h2><div class="admin-table-wrap"><table><thead><tr><th>رقم العميل</th><th>الاسم</th><th>رقم الجوال</th><th>التاريخ</th></tr></thead><tbody id="customersTable"><tr><td colspan="4">جارٍ التحميل...</td></tr></tbody></table></div></section><section class="admin-section" aria-labelledby="leadsTitle"><h2 id="leadsTitle">العملاء</h2><div class="admin-table-wrap"><table><thead><tr><th>الاسم</th><th>بيانات التواصل</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody id="leadsTable"><tr><td colspan="4">جارٍ التحميل...</td></tr></tbody></table></div></section><section class="admin-section" aria-labelledby="siteOrdersTitle"><h2 id="siteOrdersTitle">طلبات إنشاء المواقع</h2><div class="admin-table-wrap"><table><thead><tr><th>العميل</th><th>نوع الموقع</th><th>السعر المبدئي</th><th>التواصل</th><th>المزايا</th><th>التاريخ</th></tr></thead><tbody id="siteOrdersTable"><tr><td colspan="6">جارٍ التحميل...</td></tr></tbody></table></div></section><section class="admin-section" aria-labelledby="contractsTitle"><h2 id="contractsTitle">العقود</h2><div class="admin-table-wrap"><table><thead><tr><th>العميل</th><th>الخدمة</th><th>القيمة</th><th>الدعم</th><th>الحالة</th></tr></thead><tbody id="contractsTable"><tr><td colspan="5">جارٍ التحميل...</td></tr></tbody></table></div></section></main><footer class="site-footer"><small>© 2026 انطلاقة — لوحة تحكم محلية</small></footer><script src="admin.js"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>لوحة فريق انطلاقة</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+  <main class="admin-app">
+    <section id="adminLogin" class="admin-login">
+      <div class="admin-login-card">
+        <img src="logo-transparent.png" alt="انطلاقة" class="admin-logo">
+        <p class="eyebrow">فريق انطلاقة</p>
+        <h1>لوحة التحكم</h1>
+        <p>أدخل رمز الإدارة للوصول إلى الطلبات والعقود والعملاء.</p>
+        <form id="adminLoginForm">
+          <label for="adminTokenInput">رمز الإدارة</label>
+          <input id="adminTokenInput" type="password" autocomplete="current-password" required>
+          <button class="button" type="submit">دخول</button>
+          <small id="loginMessage" role="status"></small>
+        </form>
+      </div>
+    </section>
+
+    <section id="dashboard" hidden>
+      <header class="admin-topbar">
+        <div class="admin-brand">
+          <img src="logo-transparent.png" alt="انطلاقة">
+          <div><strong>لوحة فريق انطلاقة</strong><small id="lastUpdated">—</small></div>
+        </div>
+        <div class="admin-actions">
+          <button id="refreshDashboard" type="button">تحديث</button>
+          <button id="logoutAdmin" type="button" class="danger-lite">خروج</button>
+        </div>
+      </header>
+
+      <div class="admin-shell">
+        <aside class="admin-sidebar">
+          <button class="admin-nav active" data-tab="overview">نظرة عامة</button>
+          <button class="admin-nav" data-tab="notifications">بانتظار الموافقة <b id="navNotifications">0</b></button>
+          <button class="admin-nav" data-tab="customers">العملاء <b id="navCustomers">0</b></button>
+          <button class="admin-nav" data-tab="leads">طلبات التواصل <b id="navLeads">0</b></button>
+          <button class="admin-nav" data-tab="siteOrders">طلبات المواقع <b id="navSiteOrders">0</b></button>
+          <button class="admin-nav" data-tab="contracts">العقود <b id="navContracts">0</b></button>
+          <button class="admin-nav" data-tab="digitalOrders">المنتجات الرقمية <b id="navDigitalOrders">0</b></button>
+          <button class="admin-nav" data-tab="whatsapp">واتساب <b id="navWhatsapp">0</b></button>
+          <a href="index.html" class="admin-site-link">فتح الموقع</a>
+        </aside>
+
+        <section class="admin-content">
+          <select id="mobileTabSelect" class="admin-mobile-select">
+            <option value="overview">نظرة عامة</option>
+            <option value="notifications">بانتظار الموافقة</option>
+            <option value="customers">العملاء</option>
+            <option value="leads">طلبات التواصل</option>
+            <option value="siteOrders">طلبات المواقع</option>
+            <option value="contracts">العقود</option>
+            <option value="digitalOrders">المنتجات الرقمية</option>
+            <option value="whatsapp">واتساب</option>
+          </select>
+
+          <section class="admin-panel active" data-panel="overview">
+            <div class="admin-heading">
+              <div><p class="eyebrow">مركز التشغيل</p><h1>نظرة عامة</h1><p>كل ما يحتاجه فريق انطلاقة لمتابعة الطلبات من الاستلام إلى التسليم.</p></div>
+            </div>
+            <div class="admin-kpis">
+              <article><span>بانتظار الموافقة</span><strong id="pendingReviewCount">0</strong></article>
+              <article><span>العملاء</span><strong id="customerCount">0</strong></article>
+              <article><span>العقود</span><strong id="contractCount">0</strong></article>
+              <article><span>طلبات المواقع</span><strong id="siteOrderCount">0</strong></article>
+              <article><span>المنتجات الرقمية</span><strong id="digitalOrderCount">0</strong></article>
+              <article><span>قيد التنفيذ</span><strong id="activeCount">0</strong></article>
+              <article><span>مكتمل</span><strong id="completedCount">0</strong></article>
+            </div>
+            <div class="admin-grid-2">
+              <article class="admin-card">
+                <div class="admin-card-head"><div><h2>حالة الأنظمة</h2><p>جاهزية الخدمات الرئيسية.</p></div></div>
+                <div class="health-grid">
+                  <div><span>API</span><b id="healthApi">جارٍ الفحص</b></div>
+                  <div><span>الذكاء الاصطناعي</span><b id="healthAi">جارٍ الفحص</b></div>
+                  <div><span>WhatsApp</span><b id="healthWhatsapp">جارٍ الفحص</b></div>
+                  <div><span>قالب العملاء</span><b id="healthTemplate">جارٍ الفحص</b></div>
+                  <div><span>إشعار الفريق</span><b id="healthAdminWa">جارٍ الفحص</b></div>
+                </div>
+              </article>
+              <article class="admin-card">
+                <div class="admin-card-head"><div><h2>أحدث النشاط</h2><p>آخر العمليات الواردة.</p></div></div>
+                <div id="recentActivity" class="activity-list"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="admin-panel" data-panel="notifications">
+            <div class="admin-section-title"><div><h2>طلبات تنتظر الموافقة</h2><p>أي عميل يوافق على العقد يظهر هنا فورًا بحالة «قيد المراجعة».</p></div></div>
+            <div id="notificationsList" class="notification-list"></div>
+          </section>
+
+          <section class="admin-panel" data-panel="customers">
+            <div class="admin-section-title"><div><h2>العملاء المسجلون</h2><p>بيانات العملاء المرتبطة بالطلبات.</p></div></div>
+            <div class="admin-tools"><input class="admin-search" data-target="customersTable" type="search" placeholder="بحث بالاسم أو الجوال أو رقم العميل"><button data-export="customers" type="button">تصدير CSV</button></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>رقم العميل</th><th>الاسم</th><th>الجوال</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody id="customersTable"></tbody></table></div>
+          </section>
+
+          <section class="admin-panel" data-panel="leads">
+            <div class="admin-section-title"><div><h2>طلبات التواصل</h2><p>العملاء الذين طلبوا التواصل معهم.</p></div></div>
+            <div class="admin-tools"><input class="admin-search" data-target="leadsTable" type="search" placeholder="بحث سريع"><button data-export="leads" type="button">تصدير CSV</button></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>الاسم</th><th>التواصل</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody id="leadsTable"></tbody></table></div>
+          </section>
+
+          <section class="admin-panel" data-panel="siteOrders">
+            <div class="admin-section-title"><div><h2>طلبات المواقع</h2><p>إدارة تنفيذ مشاريع المواقع.</p></div></div>
+            <div class="admin-tools"><input class="admin-search" data-target="siteOrdersTable" type="search" placeholder="بحث باسم العميل أو المشروع"><button data-export="siteOrders" type="button">تصدير CSV</button></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>الطلب</th><th>العميل</th><th>المشروع</th><th>السعر</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody id="siteOrdersTable"></tbody></table></div>
+          </section>
+
+          <section class="admin-panel" data-panel="contracts">
+            <div class="admin-section-title"><div><h2>العقود</h2><p>راجع الطلب ثم انقله من «قيد المراجعة» إلى «قيد التنفيذ» عند الاعتماد.</p></div></div>
+            <div class="admin-tools"><input class="admin-search" data-target="contractsTable" type="search" placeholder="بحث باسم العميل أو رقم التتبع"><button data-export="contracts" type="button">تصدير CSV</button></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>رقم التتبع</th><th>العميل</th><th>الخدمة</th><th>القيمة</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody id="contractsTable"></tbody></table></div>
+          </section>
+
+          <section class="admin-panel" data-panel="digitalOrders">
+            <div class="admin-section-title"><div><h2>المنتجات الرقمية</h2><p>متابعة الدفع والتنفيذ للطلبات الرقمية.</p></div></div>
+            <div class="admin-tools"><input class="admin-search" data-target="digitalOrdersTable" type="search" placeholder="بحث باسم العميل أو رقم الطلب"><button data-export="digitalOrders" type="button">تصدير CSV</button></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتج</th><th>القيمة</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody id="digitalOrdersTable"></tbody></table></div>
+          </section>
+
+          <section class="admin-panel" data-panel="whatsapp">
+            <div class="admin-section-title"><div><h2>واتساب</h2><p>آخر الرسائل وحالات التسليم الواردة من Meta Webhook.</p></div></div>
+            <div id="whatsappEvents" class="activity-list"></div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>
