@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check script.js && node --check start-project.js && node --check contract.js && node --check admin.js && node --check tracking.js && node --check customer-session.js && node --check register.js",
+    "check": "node --check server.js && node --check script.js && node --check start-project.js && node --check contract.js && node --check admin.js && node --check tracking.js && node --check customer-session.js && node --check register.js && node --check whatsapp.js",
     "build": "npm run check"
   },
   "engines": {
