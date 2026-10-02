@@ -18,6 +18,10 @@ function isWhatsAppConfigured() {
   return Boolean(ACCESS_TOKEN && PHONE_NUMBER_ID && GRAPH_API_VERSION);
 }
 
+function isOrderTemplateConfigured() {
+  return Boolean(ORDER_TEMPLATE);
+}
+
 function verifyWebhookChallenge(url) {
   const mode = url.searchParams.get('hub.mode');
   const token = url.searchParams.get('hub.verify_token');
@@ -165,6 +169,7 @@ function extractWebhookEvents(payload) {
 module.exports = {
   extractWebhookEvents,
   isWhatsAppConfigured,
+  isOrderTemplateConfigured,
   sendOrderNotification,
   sendWhatsAppTemplate,
   sendWhatsAppText,
