@@ -6,6 +6,8 @@ const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || '';
 const APP_SECRET = process.env.META_APP_SECRET || '';
 const GRAPH_API_VERSION = process.env.META_GRAPH_API_VERSION || '';
 const ORDER_TEMPLATE = process.env.WHATSAPP_ORDER_TEMPLATE || '';
+const ADMIN_REVIEW_TEMPLATE = process.env.WHATSAPP_ADMIN_REVIEW_TEMPLATE || '';
+const ADMIN_PHONE = process.env.WHATSAPP_ADMIN_PHONE || '';
 const TEMPLATE_LANGUAGE = process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'ar';
 
 function safeEqual(a, b) {
@@ -97,6 +99,17 @@ async function sendOrderNotification(to, customerName, orderCode, status) {
     to,
     ORDER_TEMPLATE,
     [customerName, orderCode, status]
+  );
+}
+
+async function sendAdminReviewNotification(customerName, orderCode, service) {
+  if (!isAdminNotificationConfigured()) {
+    return { ok: false, skipped: true, reason: 'admin_notification_not_configured' };
+  }
+  return sendWhatsAppTemplate(
+    ADMIN_PHONE,
+    ADMIN_REVIEW_TEMPLATE,
+    [customerName, orderCode, service]
   );
 }
 

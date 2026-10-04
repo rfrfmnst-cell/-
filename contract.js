@@ -45,7 +45,7 @@ if (!customer) {
         const notice = document.createElement('p');
         notice.id='trackingNotice';
         notice.className='tracking-code';
-        notice.innerHTML=`رقم التتبع: <strong>${data.trackingCode}</strong><br><small>مرتبط برقم العميل ${customer.customerCode}</small>`;
+        notice.innerHTML=`<strong>تم استلام طلبك وهو الآن قيد المراجعة.</strong><br>رقم التتبع: <strong>${data.trackingCode}</strong><br><small>سيتم تحديث الحالة بعد مراجعة فريق انطلاقة.</small>`;
         preview.prepend(notice);
       }
     } catch (error) {
