@@ -6,8 +6,6 @@ const {
   extractWebhookEvents,
   isWhatsAppConfigured,
   isOrderTemplateConfigured,
-  isAdminNotificationConfigured,
-  sendAdminReviewNotification,
   sendOrderNotification,
   verifyWebhookChallenge,
   verifyWebhookSignature
@@ -651,7 +649,6 @@ const server = http.createServer(async (req, res) => {
       aiConfigured: Boolean(OPENAI_API_KEY),
       whatsappConfigured: isWhatsAppConfigured(),
       whatsappTemplateConfigured: isOrderTemplateConfigured(),
-      whatsappAdminNotificationConfigured: isAdminNotificationConfigured(),
       time: new Date().toISOString()
     });
   }

@@ -24,10 +24,6 @@ function isOrderTemplateConfigured() {
   return Boolean(ORDER_TEMPLATE);
 }
 
-function isAdminNotificationConfigured() {
-  return Boolean(ADMIN_PHONE && ADMIN_REVIEW_TEMPLATE && isWhatsAppConfigured());
-}
-
 function verifyWebhookChallenge(url) {
   const mode = url.searchParams.get('hub.mode');
   const token = url.searchParams.get('hub.verify_token');
@@ -187,8 +183,6 @@ module.exports = {
   extractWebhookEvents,
   isWhatsAppConfigured,
   isOrderTemplateConfigured,
-  isAdminNotificationConfigured,
-  sendAdminReviewNotification,
   sendOrderNotification,
   sendWhatsAppTemplate,
   sendWhatsAppText,
